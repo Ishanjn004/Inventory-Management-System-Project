@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image,ImageTk
-from tkinter import ttk
+from tkinter import ttk,messagebox
+import mysql.connector
 
 class employeeClass:
     def __init__(self,root):
@@ -29,12 +30,12 @@ class employeeClass:
         SearchFrame.place(x=250,y=20,width=800,height=70)
 
         #=========================Search Options=========================
-        cmb_search=ttk.Combobox(SearchFrame,textvariable=self.var_searchby,values=("Select","Employee Name","Contact No","Email"),state="readonly",justify=CENTER,font=("goudy old style",15))
+        cmb_search=ttk.Combobox(SearchFrame,textvariable=self.var_searchby,values=("Select","Name","Contact","Email"),state="readonly",justify=CENTER,font=("goudy old style",15))
         cmb_search.place(x=10,y=10,width=180)
         cmb_search.current(0)
 
         txt_search=Entry(SearchFrame,textvariable=self.var_searchtxt,font=("goudy old style",15),bg="#fcf3cf").place(x=200,y=10,width=350)
-        btn_search=Button(SearchFrame,text="Search",font=("goudy old style",15,"bold"),bg="#d35400",fg="white",cursor="hand2").place(x=600,y=9,width=150,height=30)
+        btn_search=Button(SearchFrame,text="Search",command=self.search,font=("goudy old style",15,"bold"),bg="#d35400",fg="white",cursor="hand2").place(x=600,y=9,width=150,height=30)
 
         #=========================Title=========================
         title=Label(self.root,text="Employee Details",font=("goudy old style",20,"bold"),bg="#0b5345",fg="white").place(x=50,y=100,width=1180)
@@ -76,10 +77,10 @@ class employeeClass:
         txt_salary=Entry(self.root,textvariable=self.var_salary,font=("goudy old style",20),bg="#fcf3cf").place(x=760,y=300,width=180)
 
         #=========================Buttons=========================
-        btn_add=Button(self.root,text="Save",font=("goudy old style",15,"bold"),bg="#3498db",fg="white",cursor="hand2").place(x=674,y=350,width=120,height=30)
-        btn_update=Button(self.root,text="Update",font=("goudy old style",15,"bold"),bg="#8e44ad",fg="white",cursor="hand2").place(x=804,y=350,width=120,height=30)
-        btn_delete=Button(self.root,text="Delete",font=("goudy old style",15,"bold"),bg="#d4ac0d",fg="white",cursor="hand2").place(x=934,y=350,width=120,height=30)
-        btn_clear=Button(self.root,text="Clear",font=("goudy old style",15,"bold"),bg="#616a6b",fg="white",cursor="hand2").place(x=1064,y=350,width=120,height=30)
+        btn_add=Button(self.root,text="Save",command=self.add,font=("goudy old style",15,"bold"),bg="#3498db",fg="white",cursor="hand2").place(x=674,y=350,width=120,height=30)
+        btn_update=Button(self.root,text="Update",command=self.update,font=("goudy old style",15,"bold"),bg="#8e44ad",fg="white",cursor="hand2").place(x=804,y=350,width=120,height=30)
+        btn_delete=Button(self.root,text="Delete",command=self.delete,font=("goudy old style",15,"bold"),bg="#d4ac0d",fg="white",cursor="hand2").place(x=934,y=350,width=120,height=30)
+        btn_clear=Button(self.root,text="Clear",command=self.clear,font=("goudy old style",15,"bold"),bg="#616a6b",fg="white",cursor="hand2").place(x=1064,y=350,width=120,height=30)
         
 
         #=========================Employee Details=========================
@@ -119,6 +120,189 @@ class employeeClass:
         self.employeeTable.column("address",width=200)
         self.employeeTable.column("salary",width=100)
         self.employeeTable.pack(fill=BOTH,expand=1)
+        self.employeeTable.bind("<ButtonRelease-1>",self.get_data)
+
+        self.show()
+
+#================================================================
+    def add(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                if self.var_emp_id.get()=="" or self.var_name.get()=="" or self.var_email.get()=="": 
+                    messagebox.showerror("Error","All fields are required",parent=self.root)
+                else:
+                    cursor.execute("select * from employee where eid=%s",(self.var_emp_id.get(),))
+                    row=cursor.fetchone()
+                    if row!=None:
+                        messagebox.showerror("Error","Employee ID already exists",parent=self.root)
+                    else:
+                        cursor.execute("insert into employee (eid,name,email,gender,contact,dob,doj,pass,utype,address,salary) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(
+                            self.var_emp_id.get(),
+                            self.var_name.get(),
+                            self.var_email.get(),
+                            self.var_gender.get(),
+                            self.var_contact.get(),
+                            self.var_dob.get(),
+                            self.var_doj.get(),
+                            self.var_pass.get(),
+                            self.var_utype.get(),
+                            self.txt_address.get('1.0',END),
+                            self.var_salary.get()
+                        ))
+                        connection.commit()
+                        messagebox.showinfo("Success","Employee added successfully",parent=self.root)
+                        self.show()
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+        
+    def show(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                cursor.execute("select * from employee")
+                rows=cursor.fetchall()
+                self.employeeTable.delete(*self.employeeTable.get_children())
+                for row in rows:
+                    self.employeeTable.insert('',END,values=row)
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+    
+    def get_data(self,ev):
+        r=self.employeeTable.focus()
+        content=self.employeeTable.item(r)
+        row=content["values"]
+        self.var_emp_id.set(row[0])
+        self.var_name.set(row[1])
+        self.var_email.set(row[2])
+        self.var_gender.set(row[3])
+        self.var_contact.set(row[4])
+        self.var_dob.set(row[5])
+        self.var_doj.set(row[6])
+        self.var_pass.set(row[7])
+        self.var_utype.set(row[8])
+        self.txt_address.delete('1.0',END)
+        self.txt_address.insert(END,row[9])
+        self.var_salary.set(row[10])
+    
+    def update(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                if self.var_emp_id.get()=="" or self.var_name.get()=="" or self.var_email.get()=="": 
+                    messagebox.showerror("Error","All fields are required",parent=self.root)
+                else:
+                    cursor.execute("select * from employee where eid=%s",(self.var_emp_id.get(),))
+                    row=cursor.fetchone()
+                    if row==None:
+                        messagebox.showerror("Error","Invalid Employee ID",parent=self.root)
+                    else:
+                        cursor.execute("update employee set name=%s,email=%s,gender=%s,contact=%s,dob=%s,doj=%s,pass=%s,utype=%s,address=%s,salary=%s where eid=%s",(
+                            self.var_name.get(),
+                            self.var_email.get(),
+                            self.var_gender.get(),
+                            self.var_contact.get(),
+                            self.var_dob.get(),
+                            self.var_doj.get(),
+                            self.var_pass.get(),
+                            self.var_utype.get(),
+                            self.txt_address.get('1.0',END),
+                            self.var_salary.get(),
+                            self.var_emp_id.get()
+                        ))
+                        connection.commit()
+                        messagebox.showinfo("Success","Employee updated successfully",parent=self.root)
+                        self.show()
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+        
+    def delete(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                if self.var_emp_id.get()=="" or self.var_name.get()=="" or self.var_email.get()=="": 
+                    messagebox.showerror("Error","All fields are required",parent=self.root)
+                else:
+                    cursor.execute("select * from employee where eid=%s",(self.var_emp_id.get(),))
+                    row=cursor.fetchone()
+                    if row==None:
+                        messagebox.showerror("Error","Invalid Employee ID",parent=self.root)
+                    else:
+                        op=messagebox.askyesno("Confirm","Do you really want to delete?",parent=self.root)
+                        if op==True:
+                            cursor.execute("delete from employee where eid=%s",(self.var_emp_id.get(),))
+                            connection.commit()
+                            messagebox.showinfo("Success","Employee deleted successfully",parent=self.root)
+                            self.show()
+                            self.clear()
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+
+    def clear(self):
+        self.var_emp_id.set("")
+        self.var_name.set("")
+        self.var_email.set("")
+        self.var_gender.set("Select")
+        self.var_contact.set("")
+        self.var_dob.set("")
+        self.var_doj.set("")
+        self.var_pass.set("")
+        self.var_utype.set("Select")
+        self.txt_address.delete('1.0',END)
+        self.var_salary.set("")
+        self.var_searchby.set("Select")
+        self.var_searchtxt.set("")
+        self.show()
+
+    def search(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                if self.var_searchby.get()=="Select":
+                    messagebox.showerror("Error","Select Search By option",parent=self.root)
+                elif self.var_searchtxt.get()=="":
+                    messagebox.showerror("Error","Search input should be required",parent=self.root)
+                else:
+                    cursor.execute("select * from employee where "+self.var_searchby.get()+" LIKE '%"+self.var_searchtxt.get()+"%'")
+                    rows=cursor.fetchall()
+                    if len(rows)!=0:
+                        self.employeeTable.delete(*self.employeeTable.get_children())
+                        for row in rows:
+                            self.employeeTable.insert('',END,values=row)
+                    else:
+                        messagebox.showerror("Error","No record found!!!",parent=self.root)
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to : {str(ex)}")
 
 if __name__=="__main__":
     root=Tk()
