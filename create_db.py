@@ -15,6 +15,7 @@ try:
         print("Database created successfully!")
         cursor.execute("USE IMS")
         cursor.execute("CREATE TABLE IF NOT EXISTS employee (eid INT AUTO_INCREMENT PRIMARY KEY,name text,email text,gender text,contact text,dob text,doj text,pass text,utype text,address text,salary text)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS supplier(invoice INTEGER PRIMARY KEY AUTO_INCREMENT,name text,contact text,description text)")
         print("Table created successfully!")
 except Error as e:
     print("Error while connecting to MySQL:", e)

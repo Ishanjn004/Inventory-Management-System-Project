@@ -158,6 +158,7 @@ class employeeClass:
                         ))
                         connection.commit()
                         messagebox.showinfo("Success","Employee added successfully",parent=self.root)
+                        self.clear()
                         self.show()
         except Exception as ex:
             messagebox.showerror("Error",f"Error due to: {str(ex)}")
@@ -230,6 +231,7 @@ class employeeClass:
                         ))
                         connection.commit()
                         messagebox.showinfo("Success","Employee updated successfully",parent=self.root)
+                        self.clear()
                         self.show()
         except Exception as ex:
             messagebox.showerror("Error",f"Error due to: {str(ex)}")
