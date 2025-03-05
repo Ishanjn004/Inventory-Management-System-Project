@@ -50,6 +50,11 @@ for product, data in sales_data.items():
 class sales_analysis_Class:
     def __init__(self, root):
         root.title("AI Sales Analyzer - Restocking Suggestion")  # Use the existing root
+        self.root=root
+        self.root.geometry("1290x700+380+150")
+        self.root.title("Inventory Management System")
+        self.root.config(bg="white")
+        self.root.focus_force()
 
         frame = ttk.Frame(root, padding="10")
         frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))

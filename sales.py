@@ -35,23 +35,23 @@ class salesClass:
         self.Sales_List.bind("<ButtonRelease-1>",self.get_data)
 
         bill_frame=Frame(self.root,bd=3,relief=RIDGE)
-        bill_frame.place(x=400,y=150,width=470,height=500)
+        bill_frame.place(x=400,y=150,width=520,height=500)
 
         lbl_title2=Label(bill_frame,text="Customer Bill Area",font=("goudy old style",20,"bold"),bg="#273746",fg="white").pack(side=TOP,fill=X)
 
         scrolly2=Scrollbar(bill_frame,orient=VERTICAL)
 
-        self.bill_area=Text(bill_frame,font=("goudy old style",16),bg="#d6eaf8",yscrollcommand=scrolly2.set)
+        self.bill_area=Text(bill_frame,bg="#d6eaf8",yscrollcommand=scrolly2.set)
         scrolly2.pack(side=RIGHT,fill=Y)
         scrolly2.config(command=self.bill_area.yview)
         self.bill_area.pack(fill=BOTH,expand=1)
 
         self.bill_photo=Image.open("images/cat2.jpg")
-        self.bill_photo=self.bill_photo.resize((450,400),Image.Resampling.LANCZOS)
+        self.bill_photo=self.bill_photo.resize((300,400),Image.Resampling.LANCZOS)
         self.bill_photo=ImageTk.PhotoImage(self.bill_photo)
 
         lbl_image=Label(self.root,image=self.bill_photo,bd=0)
-        lbl_image.place(x=900,y=180)
+        lbl_image.place(x=940,y=180)
 
         self.show()
 

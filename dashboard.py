@@ -5,6 +5,7 @@ from supplier import supplierClass
 from category import categoryClass
 from product import productClass
 from sales import salesClass
+from sales_analysis import sales_analysis_Class
 
 class IMS:
     def __init__(self,root):
@@ -40,7 +41,7 @@ class IMS:
         btn_category=Button(LeftMenu,text="Category",command=self.category,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_product=Button(LeftMenu,text="Product",command=self.product,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_sales=Button(LeftMenu,text="Sales",command=self.sales,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
-        btn_exit=Button(LeftMenu,text="Exit",image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        btn_sales_anal=Button(LeftMenu,text="Sales Analysis",command=self.sales_analysis,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
 
         #=========================Content=========================
         self.lbl_employee=Label(self.root,text="Total Employees\n[ 0 ]",font=("goudy old style",28,"bold"),bg="#4a235a",fg="white",bd=5,relief=RIDGE)
@@ -77,6 +78,9 @@ class IMS:
     def sales(self):
         self.new_win=Toplevel(self.root)
         self.new_obj=salesClass(self.new_win)
+    def sales_analysis(self):
+        self.new_win=Toplevel(self.root)
+        self.new_obj=sales_analysis_Class(self.new_win)
 
 if __name__=="__main__":
     root=Tk()

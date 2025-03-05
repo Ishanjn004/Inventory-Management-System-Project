@@ -1,6 +1,8 @@
 from tkinter import *
 from PIL import Image,ImageTk
 from tkinter import ttk,messagebox
+import mysql.connector
+import time
 
 
 class BillClass:
@@ -9,7 +11,7 @@ class BillClass:
         self.root.geometry("2560x980+0+0")
         self.root.title("Inventory Management System")
         self.root.config(bg="white")
-
+        self.cart_list=[]
         #=========================Title=========================
         self.icon_title=PhotoImage(file="images/logo1.png")
         title=Label(self.root,text="Inventory Management System",image=self.icon_title,compound=LEFT,font=("times new roman",40,"bold"),bg="#1b2631",fg="white",anchor="w",padx=20).place(x=0,y=0,relwidth=1,height=70)
@@ -22,7 +24,7 @@ class BillClass:
         self.lbl_clock.place(x=0,y=70,relwidth=1,height=30)
 
         #------------ footer -----------------
-        lbl_footer=Label(self.root,text="IMS-Inventory Management System\nFor any Technical Issues Contact: 8595791213",font=("times new roman",12,'bold'),bg="#4d636d",fg="white",height=4).pack(side=BOTTOM,fill=X)
+        lbl_footer=Label(self.root,text="IMS-Inventory Management System\nFor any Technical Issues Contact: 8595791213",font=("times new roman",12,'bold'),bg="#4d636d",fg="white",height=2).pack(side=BOTTOM,fill=X)
 
         #====Product Frame=======================================
         self.var_search=StringVar()
@@ -38,8 +40,8 @@ class BillClass:
 
         lbl_search=Label(ProductFrame2,text="Product Name",font=("times new roman",18,"bold"),bg="white").place(x=20,y=55)
         txt_search=Entry(ProductFrame2,textvariable=self.var_search,font=("times new roman",18),bg="#d6eaf8").place(x=180,y=60,width=200,height=25)
-        btn_search=Button(ProductFrame2,text="Search",font=("goudy old style",15),bg="#212f3c",fg="white",cursor="hand2").place(x=400,y=57,width=100,height=28)
-        btn_show_all=Button(ProductFrame2,text="Show All",font=("goudy old style",15),bg="#641e16",fg="white",cursor="hand2").place(x=400,y=20,width=100,height=28)
+        btn_search=Button(ProductFrame2,text="Search",font=("goudy old style",15),command=self.search,bg="#212f3c",fg="white",cursor="hand2").place(x=400,y=57,width=100,height=28)
+        btn_show_all=Button(ProductFrame2,text="Show All",font=("goudy old style",15),command=self.show,bg="#641e16",fg="white",cursor="hand2").place(x=400,y=20,width=100,height=28)
 
         ProductFrame3=Frame(ProductFrame1,bd=3,relief=RIDGE)
         ProductFrame3.place(x=2,y=160,width=558,height=600)
@@ -65,7 +67,7 @@ class BillClass:
         self.product_Table.column("status",width=100)
         
         self.product_Table.pack(fill=BOTH,expand=1)
-        # self.product_Table.bind("<ButtonRelease-1>",self.get_data)
+        self.product_Table.bind("<ButtonRelease-1>",self.get_data)
         lbl_note=Label(ProductFrame1,text="        Note: 'Enter 0 Quantity to remove product from the Cart'",font=("goudy old style",15),anchor='w',bg="white",fg="#cb4335").pack(side=BOTTOM,fill=X)
 
 
@@ -121,12 +123,13 @@ class BillClass:
         cart_Frame=Frame(Cal_Cart_Frame,bd=3,relief=RIDGE)
         cart_Frame.place(x=350,y=8,width=245,height=578)
 
-        cartTitle=Label(cart_Frame,text="Cart \t Total Product: [0]",font=("goudy old style",15),bg="#b2babb").pack(side=TOP,fill=X)
+        self.cartTitle=Label(cart_Frame,text="Cart \t Total Product: 0",font=("goudy old style",15),bg="#b2babb")
+        self.cartTitle.pack(side=TOP,fill=X)
 
         scrolly=Scrollbar(cart_Frame,orient=VERTICAL)
         scrollx=Scrollbar(cart_Frame,orient=HORIZONTAL)
         
-        self.CartTable=ttk.Treeview(cart_Frame,columns=("pid","name","price","qty","status"),yscrollcommand=scrolly.set,xscrollcommand=scrollx.set)
+        self.CartTable=ttk.Treeview(cart_Frame,columns=("pid","name","price","qty"),yscrollcommand=scrolly.set,xscrollcommand=scrollx.set)
         scrollx.pack(side=BOTTOM,fill=X)
         scrolly.pack(side=RIGHT,fill=Y)
         scrollx.config(command=self.CartTable.xview)
@@ -135,16 +138,14 @@ class BillClass:
         self.CartTable.heading("name",text="Name")
         self.CartTable.heading("price",text="Price")
         self.CartTable.heading("qty",text="Quantity")
-        self.CartTable.heading("status",text="Status")
         self.CartTable["show"]="headings"
         self.CartTable.column("pid",width=40)
         self.CartTable.column("name",width=100)
         self.CartTable.column("price",width=90)
-        self.CartTable.column("qty",width=50)
-        self.CartTable.column("status",width=90)
+        self.CartTable.column("qty",width=60)
         
         self.CartTable.pack(fill=BOTH,expand=1)
-        # self.CartTable.bind("<ButtonRelease-1>",self.get_data)
+        self.CartTable.bind("<ButtonRelease-1>",self.get_data_cart)
 
         self.var_pid=StringVar()
         self.var_pname=StringVar()
@@ -166,11 +167,11 @@ class BillClass:
         txt_p_qty=Entry(Add_CartWidgetsFrame,textvariable=self.var_qty,font=("times new roman",15),bg="#d6eaf8").place(x=420,y=35,width=150,height=22)
 
 
-        self.lbl_inStock=Label(Add_CartWidgetsFrame,text="In Stock [9999]",font=("times new roman",15),bg="white")
+        self.lbl_inStock=Label(Add_CartWidgetsFrame,text="In Stock: ",font=("times new roman",15),bg="white")
         self.lbl_inStock.place(x=5,y=70)
 
-        btn_clear_cart=Button(Add_CartWidgetsFrame,text="Clear",font=("times new roman",15,"bold"),bg="#ccd1d1",cursor="hand2").place(x=200,y=70,width=150,height=30)
-        btn_add_cart=Button(Add_CartWidgetsFrame,text="ADD | Update Cart",font=("times new roman",15,"bold"),bg="#eb984e",cursor="hand2").place(x=390,y=70,width=180,height=30)
+        btn_clear_cart=Button(Add_CartWidgetsFrame,text="Clear",command=self.clear_cart,font=("times new roman",15,"bold"),bg="#ccd1d1",cursor="hand2").place(x=200,y=70,width=150,height=30)
+        btn_add_cart=Button(Add_CartWidgetsFrame,text="ADD | Update Cart",font=("times new roman",15,"bold"),command=self.add_update_cart,bg="#eb984e",cursor="hand2").place(x=390,y=70,width=180,height=30)
 
 
         #====================Billing Area=================================
@@ -188,24 +189,27 @@ class BillClass:
         billMenuFrame=Frame(self.root,bd=2,relief=RIDGE,bg="white")
         billMenuFrame.place(x=1185,y=760,width=520,height=150)
 
-        self.lbl_amnt=Label(billMenuFrame,text="Bill Amount\n[0]",font=("goudy old style",15,"bold"),bg="#3f51b5",fg="white")
+        self.lbl_amnt=Label(billMenuFrame,text="Bill Amount\n0",font=("goudy old style",15,"bold"),bg="#3f51b5",fg="white")
         self.lbl_amnt.place(x=2,y=5,width=170,height=70)
 
-        self.lbl_discount=Label(billMenuFrame,text="Discount\n[5%]",font=("goudy old style",15,"bold"),bg="#8bc34a",fg="white")
+        self.lbl_discount=Label(billMenuFrame,text="Discount\n5%",font=("goudy old style",15,"bold"),bg="#8bc34a",fg="white")
         self.lbl_discount.place(x=174,y=5,width=160,height=70)
 
-        self.lbl_net_pay=Label(billMenuFrame,text="Net Pay\n[0]",font=("goudy old style",15,"bold"),bg="#607d8b",fg="white")
+        self.lbl_net_pay=Label(billMenuFrame,text="Net Pay\n0",font=("goudy old style",15,"bold"),bg="#607d8b",fg="white")
         self.lbl_net_pay.place(x=336,y=5,width=175,height=70)
 
         btn_print=Button(billMenuFrame,text="Print",cursor="hand2",font=("goudy old style",15,"bold"),bg="#145a32",fg="white")
         btn_print.place(x=2,y=80,width=170,height=60)
 
-        btn_clear_all=Button(billMenuFrame,text="Clear All",cursor="hand2",font=("goudy old style",15,"bold"),bg="gray",fg="white")
+        btn_clear_all=Button(billMenuFrame,text="Clear All",command=self.clear_all,cursor="hand2",font=("goudy old style",15,"bold"),bg="gray",fg="white")
         btn_clear_all.place(x=174,y=80,width=160,height=60)
 
-        btn_generate=Button(billMenuFrame,text="Generate Bill",cursor="hand2",font=("goudy old style",15,"bold"),bg="#009688",fg="white")
+        btn_generate=Button(billMenuFrame,text="Generate Bill",command=self.generate_bill,cursor="hand2",font=("goudy old style",15,"bold"),bg="#009688",fg="white")
         btn_generate.place(x=336,y=80,width=175,height=60)
 
+        self.show()
+        # self.bill_top()
+        self.update_date_time()
         
         #=====================ALL FUNCTIONS================================
     def get_input(self,num):
@@ -218,6 +222,241 @@ class BillClass:
     def perform_cal(self):
         result=self.var_cal_input.get()
         self.var_cal_input.set(eval(result))
+
+    def show(self):
+        try:
+            # self.product_Table=ttk.Treeview(ProductFrame3,columns=("pid","name","price","qty","status"),yscrollcommand=scrolly.set,xscrollcommand=scrollx.set)
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                cursor.execute("select pid,name,price,qty,status from product")
+                rows=cursor.fetchall()
+                self.product_Table.delete(*self.product_Table.get_children())
+                for row in rows:
+                    self.product_Table.insert('',END,values=row)
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+
+    def search(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                if self.var_search.get()=="":
+                    messagebox.showerror("Error","Search input should be required",parent=self.root)
+                else:
+                    cursor.execute("select pid,name,price,qty,status from product where name LIKE '%"+self.var_search.get()+"%'")
+                    rows=cursor.fetchall()
+                    if len(rows)!=0:
+                        self.product_Table.delete(*self.product_Table.get_children())
+                        for row in rows:
+                            self.product_Table.insert('',END,values=row)
+                    else:
+                        messagebox.showerror("Error","No record found!!!",parent=self.root)
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to : {str(ex)}")
+
+    def get_data(self,ev):
+        f=self.product_Table.focus()
+        content=(self.product_Table.item(f))
+        row=content['values']
+        self.var_pid.set(row[0])
+        self.var_pname.set(row[1])
+        self.var_price.set(row[2])
+        self.lbl_inStock.config(text=f"In Stock: {str(row[3])}")
+        self.var_stock.set(row[3])
+        self.var_qty.set('1')
+
+    def get_data_cart(self,ev):
+        f=self.CartTable.focus()
+        content=(self.CartTable.item(f))
+        row=content['values']
+        self.var_pid.set(row[0])
+        self.var_pname.set(row[1])
+        self.var_price.set(row[2])
+        self.var_qty.set(row[3])
+        self.lbl_inStock.config(text=f"In Stock: {str(row[4])}")
+        self.var_stock.set(row[4])
+        
+
+    def add_update_cart(self):
+        if self.var_pid.get()=='':
+            messagebox.showerror('Error',"Please select Product from the list",parent=self.root)
+        elif self.var_qty.get()=='':
+            messagebox.showerror('Error',"Quantity is required",parent=self.root)
+        elif int(self.var_qty.get())>int(self.var_stock.get()):
+            messagebox.showerror('Error',"Invalid Quantity",parent=self.root)
+        else:
+            # price_cal=int(self.var_qty.get())*float(self.var_price.get())
+            # price_cal=float(price_cal)
+            price_cal=self.var_price.get()
+            cart_data=[self.var_pid.get(),self.var_pname.get(),price_cal,self.var_qty.get(),self.var_stock.get()]
+            
+            # print(self.cart_list)
+            # update cart
+            present='no'
+            index_=0
+            for row in self.cart_list:
+                if self.var_pid.get()==row[0]:
+                    present='yes'
+                    break
+                index_+=1
+            # print(present,index_)
+            if present=='yes':
+                op=messagebox.askyesno('Confirm',"Product already present\nDo you want to Update | Remove from the Cart List",parent=self.root)
+                if op==True:
+                    if self.var_qty.get()=="0":
+                        self.cart_list.pop(index_)
+                    else:
+                        # self.cart_list[index_][2]=price_cal
+                        self.cart_list[index_][3]=self.var_qty.get()
+            else:
+                self.cart_list.append(cart_data)
+            self.show_cart()
+            self.bill_updates()
+
+    def bill_updates(self):
+        self.bill_amnt=0
+        self.net_pay=0
+        self.discount=0
+        for row in self.cart_list:
+            self.bill_amnt=self.bill_amnt+(float(row[2])*int(row[3]))
+
+        self.discount=(self.bill_amnt*5)/100
+        self.net_pay=self.bill_amnt-self.discount
+        self.lbl_amnt.config(text=f'Bill Amount\nRs. {str(self.bill_amnt)}')
+        self.lbl_net_pay.config(text=f'Bill Amount\nRs. {str(self.net_pay)}')
+        self.cartTitle.config(text=f"Cart \t Total Prodact: {str(len(self.cart_list))}")
+
+    def show_cart(self):
+        try:
+            self.CartTable.delete(*self.CartTable.get_children())
+            for row in self.cart_list:
+                self.CartTable.insert('',END,values=row)
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+
+    def generate_bill(self):
+        if self.var_cname.get()=='' or self.var_contact.get()=='':
+            messagebox.showerror("Error",f"Customers Details are required",parent=self.root)
+        elif len(self.cart_list)==0:
+            messagebox.showerror("Error","Please Add product to the Cart!!!",parent=self.root)
+        else:
+            #===========BILL TOP======================  
+            self.bill_top()
+            #===========BILL MIDDLE======================  
+            self.bill_middle()
+            #===========BILL BOTTOM======================  
+            self.bill_bottom()
+
+        fp=open(f'bills/{str(self.invoice)}.txt','w')
+        fp.write(self.txt_bill_area.get('1.0',END))
+        fp.close()
+        messagebox.showinfo("Saved","Billed has been generated and saved in backend",parent=self.root)
+
+
+    def bill_top(self):
+        self.invoice=int(time.strftime('%H%M%S'))+int(time.strftime('%d%m%Y'))
+        bill_top_temp=f'''
+\t\t     Prabhu Dhyan - Inventory
+\t\tPhone No. 991100**** , Delhi-110032
+{str("="*61)}
+ Customer Name: {self.var_cname.get()}
+ Phone No.: {self.var_contact.get()}
+ Bill No.: {str(self.invoice)}\t\t\t\t\tDate: {str(time.strftime("%d/%m/%Y"))}
+{str("="*61)}
+ Product Name\t\t\t     QTY\t\t\tPrice
+{str("="*61)}
+        '''
+        self.txt_bill_area.delete('1.0',END)
+        self.txt_bill_area.insert('1.0',bill_top_temp)
+
+    def bill_bottom(self):
+        bill_bottom_temp=f'''
+{str("="*61)}
+ Bill Amount\t\t\t\t\t\tRs.{self.bill_amnt}
+ Discount\t\t\t\t\t\tRs.{self.discount}
+ Net Pay\t\t\t\t\t\tRs.{self.net_pay}
+{str("="*61)}
+        '''
+        self.txt_bill_area.insert(END,bill_bottom_temp)
+    
+    def bill_middle(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            for row in self.cart_list:
+                
+                pid=row[0]
+                name=row[1]
+                qty=int(row[4])-int(row[3])
+                if int(row[3])==int(row[4]):
+                    status="Inactive"
+                if int(row[3])!=int(row[4]):
+                    status="Active"
+                price=float(row[2])*int(row[3])
+                price=str(price)
+                self.txt_bill_area.insert(END,"\n "+name+"\t\t\t     "+row[3]+"\t\t\tRs."+price)
+                cursor = connection.cursor()
+                cursor.execute('Update product set qty=%s,status=%s where pid=%s',(
+                    qty,
+                    status,
+                    pid
+                ))
+                date = time.strftime("%Y-%m-%d")
+                cursor.execute("insert into sales (name,date,qty_sold,current_stock) values(%s,%s,%s,%s)",(
+                    name,
+                    date,
+                    row[3],
+                    qty
+                ))
+            connection.commit()  # Commit all transactions
+            cursor.close()  # Close cursor
+            connection.close()  # Close connection
+            self.show()
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to : {str(ex)}")
+
+    def clear_cart(self):
+        self.var_pid.set("")
+        self.var_pname.set("")
+        self.var_price.set("")
+        self.var_qty.set("")
+        self.lbl_inStock.config(text=f"In Stock")
+        self.var_stock.set("")
+
+    def clear_all(self):
+        del self.cart_list[:]
+        self.clear_cart()
+        self.show()
+        self.show_cart()
+        self.var_cname.set("")
+        self.var_contact.set("")
+        self.chk_print=0
+        self.txt_bill_area.delete('1.0',END)
+        self.cartTitle.config(text=f"Cart \t Total Products: 0")
+        self.var_search.set("")
+
+    def update_date_time(self):
+        time_=time.strftime("%H:%M:%S")
+        date_=time.strftime("%d-%m-%Y")
+        self.lbl_clock.config(text=f"Welcome to Inventory Management System\t\t Date: {str(date_)}\t\t Time: {str(time_)}")
+        self.lbl_clock.after(200,self.update_date_time)
+
 
 
 if __name__=="__main__":
