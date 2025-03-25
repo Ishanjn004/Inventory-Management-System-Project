@@ -3,6 +3,8 @@ from PIL import Image,ImageTk
 from tkinter import ttk,messagebox
 import mysql.connector
 import time
+import os
+import tempfile
 
 
 class BillClass:
@@ -12,12 +14,13 @@ class BillClass:
         self.root.title("Inventory Management System")
         self.root.config(bg="white")
         self.cart_list=[]
+        self.chk_print=0
         #=========================Title=========================
         self.icon_title=PhotoImage(file="images/logo1.png")
         title=Label(self.root,text="Inventory Management System",image=self.icon_title,compound=LEFT,font=("times new roman",40,"bold"),bg="#1b2631",fg="white",anchor="w",padx=20).place(x=0,y=0,relwidth=1,height=70)
 
         #=========================Button_Logout=========================
-        btn_logout=Button(self.root,text="Logout",font=("times new roman",15,"bold"),bg="yellow",cursor="hand2").place(x=1500,y=10,width=150,height=50)
+        btn_logout=Button(self.root,command=self.logout,text="Logout",font=("times new roman",15,"bold"),bg="yellow",cursor="hand2").place(x=1500,y=10,width=150,height=50)
 
         #=========================Clock=========================
         self.lbl_clock=Label(self.root,text="Welcome to Inventory Management System\t\t Date: DD-MM-YYYY\t\t Time: HH:MM:SS",font=("times new roman",15),bg="#2c3e50",fg="white")
@@ -198,7 +201,7 @@ class BillClass:
         self.lbl_net_pay=Label(billMenuFrame,text="Net Pay\n0",font=("goudy old style",15,"bold"),bg="#607d8b",fg="white")
         self.lbl_net_pay.place(x=336,y=5,width=175,height=70)
 
-        btn_print=Button(billMenuFrame,text="Print",cursor="hand2",font=("goudy old style",15,"bold"),bg="#145a32",fg="white")
+        btn_print=Button(billMenuFrame,text="Print",command=self.print_bill,cursor="hand2",font=("goudy old style",15,"bold"),bg="#145a32",fg="white")
         btn_print.place(x=2,y=80,width=170,height=60)
 
         btn_clear_all=Button(billMenuFrame,text="Clear All",command=self.clear_all,cursor="hand2",font=("goudy old style",15,"bold"),bg="gray",fg="white")
@@ -363,6 +366,7 @@ class BillClass:
         fp.write(self.txt_bill_area.get('1.0',END))
         fp.close()
         messagebox.showinfo("Saved","Billed has been generated and saved in backend",parent=self.root)
+        self.chk_print=1
 
 
     def bill_top(self):
@@ -456,6 +460,19 @@ class BillClass:
         date_=time.strftime("%d-%m-%Y")
         self.lbl_clock.config(text=f"Welcome to Inventory Management System\t\t Date: {str(date_)}\t\t Time: {str(time_)}")
         self.lbl_clock.after(200,self.update_date_time)
+
+    def print_bill(self):
+        if self.chk_print==1:
+            messagebox.showinfo("Print","Please wait while printing",parent=self.root)
+            new_file=tempfile.mktemp('.txt')
+            open(new_file,'w').write(self.txt_bill_area.get('1.0',END))
+            os.startfile(new_file,'print')
+        else:
+            messagebox.showinfo("Print","Please generate bill to print the receipt",parent=self.root)
+
+    def logout(self):
+        self.root.destroy()
+        os.system('python login.py')
 
 
 
