@@ -1,6 +1,6 @@
 from tkinter import *
-from PIL import ImageTk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
 import mysql.connector
 import os
 import email_pass
@@ -8,59 +8,124 @@ import smtplib
 import time
 
 class Login_System:
-    def __init__(self,root):
-        self.root=root
-        self.root.title("Login System")
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Inventory Management System - Login")
         self.root.geometry("1400x880+150+55")
-        self.root.config(bg="#fafafa")
-        # self.center_window(1400, 880)
+        self.root.config(bg="white")
+        self.root.resizable(False, False)
+        
+        # Custom title bar
+        self.title_bar = Frame(self.root, bg="#2f3640", height=50, relief=RAISED, bd=0)
+        self.title_bar.pack(fill=X)
+        
+        self.title_label = Label(self.title_bar, text="INVENTORY MANAGEMENT SYSTEM", 
+                               font=("Segoe UI", 14, "bold"), bg="#2f3640", fg="white")
+        self.title_label.pack(side=LEFT, padx=20)
+        
+        self.close_btn = Button(self.title_bar, text="×", font=("Segoe UI", 16), 
+                              bg="#2f3640", fg="white", bd=0, activebackground="#e84118",
+                              command=self.root.quit)
+        self.close_btn.pack(side=RIGHT, padx=10)
+        
+        self.otp = ''
 
-        self.otp=''
+        # Main content frame
+        self.main_frame = Frame(self.root, bg="#f5f6fa")
+        self.main_frame.pack(fill=BOTH, expand=True, padx=20, pady=20)
 
-        #images===============================
-        self.phone_image=ImageTk.PhotoImage(file="images/phone.png")
-        self.lbl_Phone_img=Label(self.root,image=self.phone_image,bd=0).place(x=250,y=120)
+        # Left side with image and animation
+        self.left_frame = Frame(self.main_frame, bg="white")
+        self.left_frame.pack(side=LEFT, fill=BOTH, expand=True)
 
-        #Login Frame===========================
-        login_frame=Frame(self.root,bd=2,relief=RIDGE,bg="white")
-        login_frame.place(x=700,y=150,width=350,height=460)
+        # Phone image
+        self.phone_image = Image.open("images/phone.png")
+        self.phone_photo = ImageTk.PhotoImage(self.phone_image)
 
-        title=Label(login_frame,text="Login System",font=("Elephant",30,"bold"),bg="white").place(x=0,y=30,relwidth=1)
+        # Create a label for the phone image
+        self.lbl_phone_img = Label(self.left_frame, image=self.phone_photo, bd=0, bg="#f5f6fa")
+        self.lbl_phone_img.image = self.phone_photo  # Keep a reference
+        self.lbl_phone_img.pack(pady=50)
 
-        lbl_usr=Label(login_frame,text="User ID",font=("Andalus",15),bg="white",fg="#767171").place(x=50,y=100)
-        self.userid=StringVar()
-        self.password=StringVar()
-        txt_userid=Entry(login_frame,textvariable=self.userid,font=("times new roman",15),bg="#ECECEC").place(x=50,y=140,width=250)
+        # Get phone screen position (adjust these values based on your phone image)
+        phone_x, phone_y = 165, 103  # Example coordinates, adjust as needed
+        phone_width, phone_height = 240, 428  # Example dimensions, adjust as needed
 
-        lbl_pass=Label(login_frame,text="Password",font=("Andalus",15),bg="white",fg="#767171").place(x=50,y=200)
-        txt_pass=Entry(login_frame,textvariable=self.password,show="*",font=("times new roman",15),bg="#ECECEC").place(x=50,y=240,width=250)
+        # Create a frame that will sit exactly on the phone screen
+        self.phone_screen_frame = Frame(self.lbl_phone_img, bg='white', 
+                               width=phone_width, height=phone_height)
+        self.phone_screen_frame.place(x=phone_x, y=phone_y)
 
-        btn_login=Button(login_frame,command=self.login,text="Log In",font=("Arial Rounded MT Bold",15),bg="#212f3d",fg="white",activebackground="#212f3d",activeforeground="white",cursor="hand2").place(x=50,y=300,width=250,height=35)
+        # Animation images
+        self.im1 = ImageTk.PhotoImage(file="images/im1.png")
+        self.im2 = ImageTk.PhotoImage(file="images/im2.png")
+        self.im3 = ImageTk.PhotoImage(file="images/im3.png")
 
-        hr=Label(login_frame,bg="#d5d8dc").place(x=50,y=370,width=250,height=2)
-        or_=Label(login_frame,text="OR",bg="white",fg="#d5d8dc",font=("times new roman",15,"bold")).place(x=151,y=356)
-
-        btn_forget=Button(login_frame,command=self.forget_window,text="Forget Password?",font=("times new roman",13),bg="white",fg="#21618c",bd=0,activebackground="white",activeforeground="#21618c").place(x=100,y=390)
-
-        #=====Animation Images==============================
-        self.im1=ImageTk.PhotoImage(file="images/im1.png")
-        self.im2=ImageTk.PhotoImage(file="images/im2.png")
-        self.im3=ImageTk.PhotoImage(file="images/im3.png")
-
-        self.lbl_change_image=Label(self.root,bg="white")
-        self.lbl_change_image.place(x=417,y=223,width=240,height=428)
-
+        # Create animation label inside the phone screen frame
+        self.lbl_change_image = Label(self.phone_screen_frame, bg="white")
+        self.lbl_change_image.pack(fill=BOTH, expand=True)
         self.animate()
-        # self.send_email('xyz')
 
+        # Right side with login form
+        self.right_frame = Frame(self.main_frame, bg="#f5f6fa")
+        self.right_frame.pack(side=RIGHT, fill=BOTH, expand=True)
+
+        # Login Frame
+        login_frame = Frame(self.right_frame, bd=0, relief=RIDGE, bg="white", 
+                          highlightbackground="#dfe6e9", highlightthickness=1)
+        login_frame.place(relx=0.5, rely=0.5, anchor=CENTER, width=400, height=500)
+
+        # Title
+        title = Label(login_frame, text="Login", font=("Segoe UI", 24, "bold"), 
+                    bg="white", fg="#2f3640")
+        title.pack(pady=40)
+
+        # Username field
+        lbl_usr = Label(login_frame, text="Employee ID", font=("Segoe UI", 11), 
+                       bg="white", fg="#7f8c8d")
+        lbl_usr.pack(pady=(0, 5), padx=50, anchor=W)
+
+        self.userid = StringVar()
+        self.entry_userid = ttk.Entry(login_frame, textvariable=self.userid, 
+                                    font=("Segoe UI", 12))
+        self.entry_userid.pack(fill=X, padx=50, pady=(0, 20), ipady=5)
+
+        # Password field
+        lbl_pass = Label(login_frame, text="Password", font=("Segoe UI", 11), 
+                        bg="white", fg="#7f8c8d")
+        lbl_pass.pack(pady=(0, 5), padx=50, anchor=W)
+
+        self.password = StringVar()
+        self.entry_pass = ttk.Entry(login_frame, textvariable=self.password, 
+                                   show="*", font=("Segoe UI", 12))
+        self.entry_pass.pack(fill=X, padx=50, pady=(0, 20), ipady=5)
+
+        # Login button
+        btn_login = Button(login_frame, command=self.login, text="LOGIN", 
+                          font=("Segoe UI", 12, "bold"), bg="#3498db", fg="white",
+                          activebackground="#2980b9", activeforeground="white",
+                          bd=0, cursor="hand2", height=2)
+        btn_login.pack(fill=X, padx=50, pady=(10, 20))
+
+        # Separator
+        separator = Frame(login_frame, bg="#dfe6e9", height=2)
+        separator.pack(fill=X, padx=50, pady=10)
+
+        # Forget password link
+        btn_forget = Button(login_frame, command=self.forget_window, 
+                          text="Forgot Password?", font=("Segoe UI", 10), 
+                          bg="white", fg="#3498db", bd=0, 
+                          activebackground="white", activeforeground="#2980b9",
+                          cursor="hand2")
+        btn_forget.pack(pady=10)
 
     def animate(self):
-        self.im=self.im1
-        self.im1=self.im2
-        self.im2=self.im3
-        self.im3=self.im
+        self.im = self.im1
+        self.im1 = self.im2
+        self.im2 = self.im3
+        self.im3 = self.im
         self.lbl_change_image.config(image=self.im)
-        self.lbl_change_image.after(2000,self.animate)
+        self.lbl_change_image.after(2000, self.animate)
 
     def login(self):
         connection = mysql.connector.connect(
@@ -70,25 +135,26 @@ class Login_System:
             database="IMS"
         )
         try:
-            if self.userid.get()=="" or self.password.get()=="":
-                messagebox.showerror("Error","All fields are required",parent=self.root)
+            if self.userid.get() == "" or self.password.get() == "":
+                messagebox.showerror("Error", "All fields are required", parent=self.root)
             else:
                 cursor = connection.cursor()
-                cursor.execute("Select utype from employee where eid=%s and pass=%s",(self.userid.get(),self.password.get()))
-                user=cursor.fetchone()
-                if user==None:
-                    messagebox.showerror("Error","Invalid Username or Password",parent=self.root)
+                cursor.execute("Select utype from employee where eid=%s and pass=%s", 
+                             (self.userid.get(), self.password.get()))
+                user = cursor.fetchone()
+                if user == None:
+                    messagebox.showerror("Error", "Invalid Username or Password", parent=self.root)
                 else:
-                    if user[0]=="Admin":
-                        messagebox.showinfo("Success","Welcome",parent=self.root)
+                    if user[0] == "Admin":
+                        messagebox.showinfo("Success", "Welcome Admin", parent=self.root)
                         self.root.destroy()
                         os.system('python dashboard.py')
                     else:
-                        messagebox.showinfo("Success","Welcome",parent=self.root)
+                        messagebox.showinfo("Success", "Welcome Employee", parent=self.root)
                         self.root.destroy()
                         os.system('python billing.py')
         except Exception as ex:
-            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+            messagebox.showerror("Error", f"Error due to: {str(ex)}")
 
     def forget_window(self):
         connection = mysql.connector.connect(
@@ -99,101 +165,159 @@ class Login_System:
         )
         try:
             cursor = connection.cursor()
-            if self.userid.get()=="":
-                messagebox.showerror("Error","Please enter your User ID to reset your password",parent=self.root)
+            if self.userid.get() == "":
+                messagebox.showerror("Error", "Please enter your Employee ID to reset your password", 
+                                    parent=self.root)
             else:
                 cursor = connection.cursor()
-                cursor.execute("Select email from employee where eid=%s",(self.userid.get(),))
-                email=cursor.fetchone()
-                if email==None:
-                    messagebox.showerror("Error","Invalid Employee ID, Try Again!!!",parent=self.root)
+                cursor.execute("Select email from employee where eid=%s", (self.userid.get(),))
+                email = cursor.fetchone()
+                if email == None:
+                    messagebox.showerror("Error", "Invalid Employee ID, Try Again!!!", parent=self.root)
                 else:
-                    self.var_otp=StringVar()
-                    self.var_new_pass=StringVar()
-                    self.var_confirm_pass=StringVar()
-                    chk=self.send_email(email[0])
-                    if chk!='s':
-                        messagebox.showerror("Error","OTP not sent, Try Again!!!",parent=self.root)
+                    self.var_otp = StringVar()
+                    self.var_new_pass = StringVar()
+                    self.var_confirm_pass = StringVar()
+                    
+                    chk = self.send_email(email[0])
+                    if chk != 's':
+                        messagebox.showerror("Error", "OTP not sent, Try Again!!!", parent=self.root)
                     else:
-                        self.forget_win=Toplevel(self.root)
+                        self.forget_win = Toplevel(self.root)
                         self.forget_win.title("Reset Password")
-                        self.forget_win.geometry("550x350+600+300")
+                        self.forget_win.geometry("500x450+600+300")
                         self.forget_win.config(bg="white")
                         self.forget_win.focus_force()
+                        self.forget_win.resizable(False, False)
 
-                        title=Label(self.forget_win,text="Reset Password",font=("goudy old style",20,"bold"),fg="#212f3c",bg="#d6eaf8").pack(side=TOP,fill=X)
-                        lbl_reset=Label(self.forget_win,text="Enter OTP sent on Registered Email",font=("times new roman",15),bg="white",fg="#ec7063").place(x=20,y=60)
-                        txt_reset=Entry(self.forget_win,textvariable=self.var_otp,font=("times new roman",15),show="*",bg="#fef5e7").place(x=20,y=100,width=250,height=30)
-                        self.btn_reset=Button(self.forget_win,text="Submit",font=("times new roman",15),command=self.validate_otp,bg="#e8daef",fg="black",activebackground="#e8daef",activeforeground="black",cursor="hand2")
-                        self.btn_reset.place(x=280,y=100,width=100,height=30)
+                        # Title
+                        title_frame = Frame(self.forget_win, bg="#3498db")
+                        title_frame.pack(fill=X)
+                        
+                        title = Label(title_frame, text="Reset Password", 
+                                     font=("Segoe UI", 14, "bold"), 
+                                     fg="white", bg="#3498db")
+                        title.pack(pady=15)
 
-                        new_pass=Label(self.forget_win,text="New Password",font=("times new roman",15),bg="white").place(x=20,y=160)
-                        txt_new_pass=Entry(self.forget_win,textvariable=self.var_new_pass,font=("times new roman",15),show="*",bg="#fef5e7").place(x=20,y=190,   width=250,height=30)
+                        # Main content
+                        content_frame = Frame(self.forget_win, bg="white")
+                        content_frame.pack(fill=BOTH, expand=True, padx=30, pady=30)
 
-                        conf_pass=Label(self.forget_win,text="Confirm Password",font=("times new roman",15),bg="white").place(x=20,y=225)
-                        txt_conf_pass=Entry(self.forget_win,textvariable=self.var_confirm_pass,font=("times new roman",15),show="*",bg="#fef5e7").place(x=20,y=255,width=250,height=30)
+                        # OTP Section
+                        lbl_reset = Label(content_frame, 
+                                        text="Enter OTP sent to your registered email", 
+                                        font=("Segoe UI", 10), bg="white", fg="#7f8c8d")
+                        lbl_reset.pack(pady=(10, 5), anchor=W)
 
-                        self.btn_update=Button(self.forget_win,text="Update",state=DISABLED,font=("times new roman",15),command=self.update_pass,activebackground="#d4efdf",activeforeground="black",bg="#d4efdf",fg="black",cursor="hand2")
-                        self.btn_update.place(x=220,y=300,width=100,height=30)
+                        otp_frame = Frame(content_frame, bg="white")
+                        otp_frame.pack(fill=X, pady=(0, 20))
+
+                        self.entry_otp = ttk.Entry(otp_frame, textvariable=self.var_otp, 
+                                                  font=("Segoe UI", 12))
+                        self.entry_otp.pack(side=LEFT, fill=X, expand=True, ipady=5)
+
+                        self.btn_reset = Button(otp_frame, text="Verify", 
+                                              font=("Segoe UI", 10, "bold"), 
+                                              command=self.validate_otp,
+                                              bg="#2ecc71", fg="white",
+                                              activebackground="#27ae60", 
+                                              activeforeground="white",
+                                              bd=0, cursor="hand2")
+                        self.btn_reset.pack(side=RIGHT, padx=(10, 0), ipadx=10, ipady=2)
+
+                        # New Password Section
+                        lbl_new_pass = Label(content_frame, text="New Password", 
+                                           font=("Segoe UI", 10), bg="white", fg="#7f8c8d")
+                        lbl_new_pass.pack(pady=(10, 5), anchor=W)
+
+                        self.entry_new_pass = ttk.Entry(content_frame, 
+                                                      textvariable=self.var_new_pass, 
+                                                      show="*", font=("Segoe UI", 12))
+                        self.entry_new_pass.pack(fill=X, pady=(0, 20), ipady=5)
+
+                        # Confirm Password Section
+                        lbl_confirm_pass = Label(content_frame, text="Confirm Password", 
+                                               font=("Segoe UI", 10), bg="white", fg="#7f8c8d")
+                        lbl_confirm_pass.pack(pady=(10, 5), anchor=W)
+
+                        self.entry_confirm_pass = ttk.Entry(content_frame, 
+                                                          textvariable=self.var_confirm_pass, 
+                                                          show="*", font=("Segoe UI", 12))
+                        self.entry_confirm_pass.pack(fill=X, pady=(0, 20), ipady=5)
+
+                        # Update Button
+                        self.btn_update = Button(content_frame, text="UPDATE PASSWORD", 
+                                               state=DISABLED, font=("Segoe UI", 12, "bold"), 
+                                               command=self.update_pass,
+                                               bg="#95a5a6", fg="white",
+                                               activebackground="#7f8c8d", 
+                                               activeforeground="white",
+                                               bd=0, cursor="hand2", height=2)
+                        self.btn_update.pack(fill=X, pady=(10, 0))
 
         except Exception as ex:
-            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+            messagebox.showerror("Error", f"Error due to: {str(ex)}")
 
-    
     def update_pass(self):
-        if self.var_new_pass.get()=="" or self.var_confirm_pass.get()=="":
-            messagebox.showerror("Error","All fields are required",parent=self.forget_win)
-        elif self.var_new_pass.get()!=self.var_confirm_pass.get():
-            messagebox.showerror("Error","Password and Confirm Password should be same",parent=self.forget_win)
+        if self.var_new_pass.get() == "" or self.var_confirm_pass.get() == "":
+            messagebox.showerror("Error", "All fields are required", parent=self.forget_win)
+        elif self.var_new_pass.get() != self.var_confirm_pass.get():
+            messagebox.showerror("Error", "Password and Confirm Password should be same", 
+                               parent=self.forget_win)
         else:
             connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="ishan",
-            database="IMS"
-        )
-        try:
-            cursor = connection.cursor()
-            cursor.execute("update employee set pass=%s where eid=%s",(self.var_new_pass.get(),self.userid.get()))
-            connection.commit()
-            connection.close()
-            messagebox.showinfo("Success","Password Updated Successfully",parent=self.forget_win)
-            self.forget_win.destroy()
-
-        except Exception as ex:
-            messagebox.showerror("Error",f"Error due to: {str(ex)}")
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            try:
+                cursor = connection.cursor()
+                cursor.execute("update employee set pass=%s where eid=%s", 
+                              (self.var_new_pass.get(), self.userid.get()))
+                connection.commit()
+                connection.close()
+                messagebox.showinfo("Success", "Password Updated Successfully", 
+                                   parent=self.forget_win)
+                self.forget_win.destroy()
+            except Exception as ex:
+                messagebox.showerror("Error", f"Error due to: {str(ex)}")
 
     def validate_otp(self):
-        if self.otp==int(self.var_otp.get()):
-            self.btn_update.config(state=NORMAL)
-            self.btn_reset.config(state=DISABLED)
+        if str(self.otp) == self.var_otp.get():
+            self.btn_update.config(state=NORMAL, bg="#3498db", activebackground="#2980b9")
+            self.btn_reset.config(state=DISABLED, bg="#95a5a6")
+            messagebox.showinfo("Success", "OTP Verified Successfully", parent=self.forget_win)
         else:
-            messagebox.showerror("Error","Invalid OTP, Try Again!!!",parent=self.forget_win)
-    
+            messagebox.showerror("Error", "Invalid OTP, Try Again!!!", parent=self.forget_win)
 
-    def send_email(self,to_):
-        s=smtplib.SMTP('smtp.gmail.com',587)
+    def send_email(self, to_):
+        s = smtplib.SMTP('smtp.gmail.com', 587)
         s.starttls()
-        email_=email_pass.email_
-        pass_=email_pass.pass_
+        email_ = email_pass.email_
+        pass_ = email_pass.pass_
 
-        s.login(email_,pass_)
+        s.login(email_, pass_)
 
-        self.otp=int(time.strftime("%H%S%M"))+int(time.strftime("%S"))
+        self.otp = int(time.strftime("%H%S%M")) + int(time.strftime("%S"))
         
-        subj='IMS - OTP for Password Reset'
-        msg='Dear Sir/Madam,\n\nYour OTP for Password Reset is: '+str(self.otp)+'\n\nWith Regards,\nIMS Team'
-        message='Subject: {}\n\n{}'.format(subj,msg)
-        s.sendmail(email_,to_,message)
-        chk=s.ehlo()
-        if chk[0]==250:
-            # messagebox.showinfo("Success","OTP Sent Successfully",parent=self.root)
+        subj = 'IMS - OTP for Password Reset'
+        msg = f'''Dear User,
+
+Your OTP for Password Reset is: {self.otp}
+
+Note: This OTP is valid for a limited time only.
+
+With Regards,
+IMS Team'''
+        message = 'Subject: {}\n\n{}'.format(subj, msg)
+        s.sendmail(email_, to_, message)
+        chk = s.ehlo()
+        if chk[0] == 250:
             return 's'
         else:
-            # messagebox.showerror("Error","OTP not sent, Try Again!!!",parent=self.root)
             return 'f'
-        
 
-root=Tk()
-obj=Login_System(root)
+root = Tk()
+obj = Login_System(root)
 root.mainloop()
