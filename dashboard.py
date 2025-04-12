@@ -5,7 +5,9 @@ from supplier import supplierClass
 from category import categoryClass
 from product import productClass
 from sales import salesClass
-from sales_analysis import sales_analysis_Class
+from sales_an import sales_analysis_Class
+from sales_analysis import ModernSalesAnalysisApp
+from return_supplier import purchase_ret_Class
 import mysql.connector
 from tkinter import ttk,messagebox
 import os
@@ -34,7 +36,7 @@ class IMS:
         self.MenuLogo=self.MenuLogo.resize((200,300),Image.Resampling.LANCZOS)
         self.MenuLogo=ImageTk.PhotoImage(self.MenuLogo)
         LeftMenu=Frame(self.root,bd=2,relief=RIDGE,bg="white")
-        LeftMenu.place(x=0,y=102,width=350,height=740) 
+        LeftMenu.place(x=0,y=102,width=350,height=805) 
         self.icon_side=PhotoImage(file="images/side.png")  
         lbl_menu=Label(LeftMenu,image=self.MenuLogo)
         lbl_menu.pack(side=TOP,fill=X)
@@ -46,6 +48,7 @@ class IMS:
         btn_product=Button(LeftMenu,text="Product",command=self.product,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_sales=Button(LeftMenu,text="Sales",command=self.sales,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         # btn_ret=Button(LeftMenu,text="Return Items",command=self.sales,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        btn_purch_ret=Button(LeftMenu,text="Good Reciepts",command=self.purchase_ret,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_sales_anal=Button(LeftMenu,text="Sales Analysis",command=self.sales_analysis,image=self.icon_side,compound=LEFT,padx=30,anchor="w",font=("times new roman",25,"bold"),bg="#f2f3f4",bd=3,cursor="hand2").pack(side=TOP,fill=X)
 
         #=========================Content=========================
@@ -85,9 +88,15 @@ class IMS:
     def sales(self):
         self.new_win=Toplevel(self.root)
         self.new_obj=salesClass(self.new_win)
+    def purchase_ret(self):
+        self.new_win=Toplevel(self.root)
+        self.new_obj=purchase_ret_Class(self.new_win)
+    # def sales_analysis(self):
+    #     self.new_win=Toplevel(self.root)
+    #     self.new_obj=sales_analysis_Class(self.new_win)
     def sales_analysis(self):
         self.new_win=Toplevel(self.root)
-        self.new_obj=sales_analysis_Class(self.new_win)
+        self.new_obj=ModernSalesAnalysisApp(self.new_win)
 
     def update_content(self):
         connection = mysql.connector.connect(
