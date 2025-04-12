@@ -2,6 +2,8 @@ from tkinter import *
 from PIL import Image,ImageTk
 from tkinter import ttk,messagebox
 import mysql.connector
+import pandas as pd
+from tkinter import filedialog
 
 class productClass:
     def __init__(self,root):
@@ -58,7 +60,12 @@ class productClass:
         btn_add=Button(product_Frame,text="Save",command=self.add,font=("goudy old style",15),bg="#2196f3",fg="white",cursor="hand2").place(x=10,y=400,width=100,height=40)
         btn_update=Button(product_Frame,text="Update",command=self.update,font=("goudy old style",15),bg="#4caf50",fg="white",cursor="hand2").place(x=120,y=400,width=100,height=40)
         btn_delete=Button(product_Frame,text="Delete",command=self.delete,font=("goudy old style",15),bg="#f44336",fg="white",cursor="hand2").place(x=230,y=400,width=100,height=40)
-        btn_clear=Button(product_Frame,text="Clear",command=self.clear,font=("goudy old style",15),bg="#607d8b",fg="white",cursor="hand2").place(x=340,y=400,width=100,height=40)
+        btn_exp=Button(product_Frame,text="Export",command=self.export_excel,font=("goudy old style",15),bg="#1a5276",fg="white",cursor="hand2").place(x=340,y=400,width=100,height=40)
+        btn_exp=Button(product_Frame,text="Import",command=self.import_excel,font=("goudy old style",15),bg="#935116",fg="white",cursor="hand2").place(x=450,y=400,width=100,height=40)
+        btn_low_stck=Button(product_Frame,text="Low Stock",command=self.show_low_stock,font=("goudy old style",15),bg="#c0392b",fg="white",cursor="hand2").place(x=10,y=450,width=120,height=40)
+        btn_out_of_stck=Button(product_Frame,text="Out of Stock",command=self.show_out_of_stock,font=("goudy old style",15),bg="#515a5a",fg="white",cursor="hand2").place(x=140,y=450,width=140,height=40)
+        btn_stck_anal=Button(product_Frame,text="Stock Analysis",command=self.stock_analysis,font=("goudy old style",15),bg="#5b2c6f",fg="white",cursor="hand2").place(x=290,y=450,width=150,height=40)
+        btn_clear=Button(product_Frame,text="Clear",command=self.clear,font=("goudy old style",15),bg="#607d8b",fg="white",cursor="hand2").place(x=450,y=450,width=100,height=40)
 
         #---------- Search Frame -------------
         SearchFrame=LabelFrame(self.root,text="Search Product",font=("goudy old style",12,"bold"),bd=2,relief=RIDGE,bg="white")
@@ -298,6 +305,167 @@ class productClass:
                         messagebox.showerror("Error","No record found!!!",parent=self.root)
         except Exception as ex:
             messagebox.showerror("Error",f"Error due to : {str(ex)}")
+
+    def export_excel(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM product")
+                rows = cursor.fetchall()
+
+                if not rows:
+                    messagebox.showinfo("Info", "No data to export", parent=self.root)
+                    return
+
+                # Creating DataFrame
+                df = pd.DataFrame(rows, columns=["Product ID", "Category", "Supplier", "Name", "Price", "Quantity", "Status"])
+
+                # Ask file location
+                file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+                if file_path:
+                    df.to_excel(file_path, index=False, engine='openpyxl')
+                    messagebox.showinfo("Success", f"Data exported successfully to {file_path}", parent=self.root)
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+
+    def import_excel(self):
+        try:
+            # Ask for Excel file to import
+            file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+            if file_path == "":
+                return  # If user cancels the file dialog
+
+            df = pd.read_excel(file_path)
+
+            required_columns = {"Category", "Supplier", "Name", "Price", "Quantity", "Status"}
+            if not required_columns.issubset(set(df.columns)):
+                messagebox.showerror("Error", f"Excel file must contain columns: {required_columns}", parent=self.root)
+                return
+
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                inserted = 0
+                for _, row in df.iterrows():
+                    # Check if product name already exists
+                    cursor.execute("SELECT * FROM product WHERE name=%s", (row["Name"],))
+                    exists = cursor.fetchone()
+                    if not exists:
+                        cursor.execute(
+                            "INSERT INTO product (Category, Supplier, name, price, qty, status) VALUES (%s, %s, %s, %s, %s, %s)",
+                            (
+                                row["Category"],
+                                row["Supplier"],
+                                row["Name"],
+                                row["Price"],
+                                row["Quantity"],
+                                row["Status"]
+                            )
+                        )
+                        inserted += 1
+
+                connection.commit()
+                messagebox.showinfo("Success", f"{inserted} products imported successfully!", parent=self.root)
+                self.show()
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+
+    def stock_analysis(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM product")
+                rows = cursor.fetchall()
+
+                if not rows:
+                    messagebox.showinfo("Info", "No product data found", parent=self.root)
+                    return
+
+                total_items = len(rows)
+                low_stock = [row for row in rows if int(row[5]) <= 5]
+                out_of_stock = [row for row in rows if int(row[5]) == 0]
+                total_value = sum(float(row[4]) * int(row[5]) for row in rows)
+
+                # Category-wise count
+                cursor.execute("SELECT Category, COUNT(*) FROM product GROUP BY Category")
+                category_data = cursor.fetchall()
+
+                # Create a popup
+                analysis_win = Toplevel(self.root)
+                analysis_win.title("Stock Analysis Report")
+                analysis_win.geometry("500x500+500+200")
+                analysis_win.config(bg="white")
+
+                title = Label(analysis_win, text="📦 Stock Analysis", font=("goudy old style", 20, "bold"), bg="white", fg="#333")
+                title.pack(pady=10)
+
+                Label(analysis_win, text=f"🧾 Total Products: {total_items}", font=("goudy old style", 16), bg="white").pack(anchor="w", padx=20, pady=5)
+                Label(analysis_win, text=f"📉 Out of Stock: {len(out_of_stock)}", font=("goudy old style", 16), fg="red", bg="white").pack(anchor="w", padx=20, pady=5)
+                Label(analysis_win, text=f"⚠️ Low Stock (<=5): {len(low_stock)}", font=("goudy old style", 16), fg="orange", bg="white").pack(anchor="w", padx=20, pady=5)
+                Label(analysis_win, text=f"💰 Total Inventory Value: ₹{total_value:.2f}", font=("goudy old style", 16), fg="green", bg="white").pack(anchor="w", padx=20, pady=5)
+
+                Label(analysis_win, text="📊 Category-wise Distribution:", font=("goudy old style", 16, "bold"), bg="white").pack(anchor="w", padx=20, pady=10)
+                for cat, count in category_data:
+                    Label(analysis_win, text=f" - {cat}: {count} item(s)", font=("goudy old style", 15), bg="white").pack(anchor="w", padx=40)
+
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to: {str(ex)}", parent=self.root)
+
+    def show_out_of_stock(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM product WHERE qty = 0")
+                rows = cursor.fetchall()
+                self.ProductTable.delete(*self.ProductTable.get_children())
+                for row in rows:
+                    self.ProductTable.insert('', END, values=row, tags=('low_stock',))
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to: {str(ex)}")
+
+
+    def show_low_stock(self):
+        try:
+            connection = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="ishan",
+                database="IMS"
+            )
+            if connection.is_connected():
+                cursor = connection.cursor()
+                cursor.execute("SELECT * FROM product WHERE qty <= 5")
+                rows = cursor.fetchall()
+                self.ProductTable.delete(*self.ProductTable.get_children())
+                for row in rows:
+                    self.ProductTable.insert('', END, values=row, tags=('low_stock',))
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to: {str(ex)}")
+
+
 
 if __name__=="__main__":
     root=Tk()
