@@ -237,7 +237,7 @@ class BillClass:
             )
             if connection.is_connected():
                 cursor = connection.cursor()
-                cursor.execute("select pid,name,price,qty,status from product")
+                cursor.execute("select pid,name,price,qty,status from product where status = 'Active'")
                 rows=cursor.fetchall()
                 self.product_Table.delete(*self.product_Table.get_children())
                 for row in rows:
@@ -258,7 +258,7 @@ class BillClass:
                 if self.var_search.get()=="":
                     messagebox.showerror("Error","Search input should be required",parent=self.root)
                 else:
-                    cursor.execute("select pid,name,price,qty,status from product where name LIKE '%"+self.var_search.get()+"%'")
+                    cursor.execute("select pid,name,price,qty,status from product where name LIKE '%"+self.var_search.get()+"%' and status='Active'")
                     rows=cursor.fetchall()
                     if len(rows)!=0:
                         self.product_Table.delete(*self.product_Table.get_children())
