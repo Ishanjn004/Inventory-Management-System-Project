@@ -338,7 +338,7 @@ class BillClass:
         self.discount=(self.bill_amnt*5)/100
         self.net_pay=self.bill_amnt-self.discount
         self.lbl_amnt.config(text=f'Bill Amount\nRs. {str(self.bill_amnt)}')
-        self.lbl_net_pay.config(text=f'Bill Amount\nRs. {str(self.net_pay)}')
+        self.lbl_net_pay.config(text=f'Net Pay\nRs. {str(self.net_pay)}')
         self.cartTitle.config(text=f"Cart \t Total Prodact: {str(len(self.cart_list))}")
 
     def show_cart(self):
@@ -352,8 +352,10 @@ class BillClass:
     def generate_bill(self):
         if self.var_cname.get()=='' or self.var_contact.get()=='':
             messagebox.showerror("Error",f"Customers Details are required",parent=self.root)
+            return
         elif len(self.cart_list)==0:
             messagebox.showerror("Error","Please Add product to the Cart!!!",parent=self.root)
+            return
         else:
             #===========BILL TOP======================  
             self.bill_top()
@@ -454,6 +456,9 @@ class BillClass:
         self.txt_bill_area.delete('1.0',END)
         self.cartTitle.config(text=f"Cart \t Total Products: 0")
         self.var_search.set("")
+        self.lbl_amnt.config(text="Bill Amount\n0")
+        self.lbl_discount.config(text="Discount\n5%")
+        self.lbl_net_pay.config(text="Net Pay\n0")
 
     def update_date_time(self):
         time_=time.strftime("%H:%M:%S")
