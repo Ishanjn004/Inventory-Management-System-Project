@@ -1,0 +1,23 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Heera
+ Phone No.: 9811138405
+ Bill No.: 29205740					Date: 29/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ NEEM KANTI BODY CLEANSER 45 GM X 4			     4			Rs.160.0
+ SWASARI PRAVAHI 250 ML			     1			Rs.85.0
+ Amla Juice			     1			Rs.190.0
+ Shilajeet			     1			Rs.290.0
+ MUKTA VATI EXTRA POWER TAB 120 (STRIP)			     1			Rs.225.0
+ SWET MUSLI CHURNA 100 GM			     1			Rs.475.0
+=============================================================
+ Bill Amount						Rs.1425.0
+ Discount						Rs.71.25
+ Net Pay						Rs.1353.75
+=============================================================
+        

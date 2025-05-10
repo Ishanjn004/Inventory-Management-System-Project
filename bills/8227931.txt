@@ -1,0 +1,20 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Shivam Arora
+ Phone No.: 9911459633
+ Bill No.: 8227931					Date: 08/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Adore Heena Dark Brown 25GM			     2			Rs.90.0
+ Aloe Vera Body Cleanser 150GM			     1			Rs.45.0
+ Aloevera Body Cleanser Set 150GMx3			     1			Rs.115.0
+=============================================================
+ Bill Amount						Rs.250.0
+ Discount						Rs.12.5
+ Net Pay						Rs.237.5
+=============================================================
+        

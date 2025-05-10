@@ -1,0 +1,21 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Vasu
+ Phone No.: 9947824933
+ Bill No.: 28254565					Date: 28/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Anardana Goli 100GM			     1			Rs.45.0
+ Ashvashila Strip 20 Cap			     2			Rs.200.0
+ Ashwagandha Strip 20 Cap			     1			Rs.90.0
+ Atta Noodle Desi Masala 60GM			     5			Rs.60.0
+=============================================================
+ Bill Amount						Rs.395.0
+ Discount						Rs.19.75
+ Net Pay						Rs.375.25
+=============================================================
+        

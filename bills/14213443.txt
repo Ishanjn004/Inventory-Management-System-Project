@@ -1,0 +1,23 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Manoj Kumar
+ Phone No.: 8427726401
+ Bill No.: 14213443					Date: 14/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Ashwagandha Churna 100 GM			     1			Rs.155.0
+ Atta Noodle Chatpata 60GM			     3			Rs.36.0
+ Atta Noodle Desi Masala 60GM			     2			Rs.24.0
+ Ayurh Tab 40			     1			Rs.240.0
+ BP Grit Tab 60			     1			Rs.200.0
+ COW GHEE 1 LT 			     1			Rs.665.0
+=============================================================
+ Bill Amount						Rs.1320.0
+ Discount						Rs.66.0
+ Net Pay						Rs.1254.0
+=============================================================
+        

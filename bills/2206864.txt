@@ -1,0 +1,22 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Jahnvi
+ Phone No.: 9811116491
+ Bill No.: 2206864					Date: 02/05/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Adore Heena Dark Brown 25GM			     1			Rs.45.0
+ DOODH BISCUT 5 RS			     5			Rs.25.0
+ SWASARI PRAVAHI 250 ML			     1			Rs.85.0
+ Amla Swaras 1LTR			     1			Rs.180.0
+ Adore Heena Indigo Powder 100GM			     1			Rs.130.0
+=============================================================
+ Bill Amount						Rs.465.0
+ Discount						Rs.23.25
+ Net Pay						Rs.441.75
+=============================================================
+        

@@ -1,0 +1,21 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Namrita
+ Phone No.: 9958019390
+ Bill No.: 1242735					Date: 01/05/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Aloevera Gel 150ML			     2			Rs.200.0
+ Aloevera Body Cleanser Set 150GMx3			     1			Rs.115.0
+ Amla Churna 100GM			     1			Rs.35.0
+ Ashwagandha Strip 20 Cap			     1			Rs.90.0
+=============================================================
+ Bill Amount						Rs.440.0
+ Discount						Rs.22.0
+ Net Pay						Rs.418.0
+=============================================================
+        

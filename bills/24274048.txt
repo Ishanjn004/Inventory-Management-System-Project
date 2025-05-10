@@ -1,0 +1,21 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Parul
+ Phone No.: 9822968474
+ Bill No.: 24274048					Date: 24/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ DANT KANTI ADVANCE COMBO 100 + 100 GM			     1			Rs.160.0
+ DANT KANTI NATURAL 100 GM			     1			Rs.60.0
+ GASCARE SYRUP 200 ML (SRP)			     1			Rs.140.0
+ MUKTA VATI EXTRA POWER TAB 120 (STRIP)			     2			Rs.450.0
+=============================================================
+ Bill Amount						Rs.810.0
+ Discount						Rs.40.5
+ Net Pay						Rs.769.5
+=============================================================
+        

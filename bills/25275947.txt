@@ -1,0 +1,21 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Alok
+ Phone No.: 9711968494
+ Bill No.: 25275947					Date: 25/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Atta Noodle Yummy Masala 60GM			     3			Rs.36.0
+ Atta Noodle Desi Masala 60GM			     6			Rs.72.0
+ Atta Noodle Chatpata 60GM			     5			Rs.60.0
+ Atta Noodle Classic 60GM			     5			Rs.60.0
+=============================================================
+ Bill Amount						Rs.228.0
+ Discount						Rs.11.4
+ Net Pay						Rs.216.6
+=============================================================
+        

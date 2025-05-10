@@ -1,0 +1,21 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Vipraj
+ Phone No.: 8929624500
+ Bill No.: 2207434					Date: 02/05/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ EKANGVEER RAS 10 GM			     1			Rs.60.0
+ GASCARE SYRUP 200 ML (SRP)			     1			Rs.140.0
+ GILOY GHAN VATI 60 TAB			     1			Rs.100.0
+ KESH KANI HAIR CLEANSER NATURAL 5 ML			     5			Rs.5.0
+=============================================================
+ Bill Amount						Rs.305.0
+ Discount						Rs.15.25
+ Net Pay						Rs.289.75
+=============================================================
+        

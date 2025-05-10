@@ -1,0 +1,21 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Nitin
+ Phone No.: 9810379197
+ Bill No.: 1242980					Date: 01/05/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Aarogya Biscuits 100GM			     2			Rs.20.0
+ Aastha Agarbati Jasmine 75GM			     1			Rs.30.0
+ Aastha Hawan Cup Kapoor Tulsi			     1			Rs.120.0
+ Acidity Nill Syrup 200ML			     1			Rs.130.0
+=============================================================
+ Bill Amount						Rs.300.0
+ Discount						Rs.15.0
+ Net Pay						Rs.285.0
+=============================================================
+        

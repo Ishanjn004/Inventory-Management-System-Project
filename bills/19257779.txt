@@ -1,0 +1,22 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Adeeba
+ Phone No.: 9953825543
+ Bill No.: 19257779					Date: 19/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ Ashvashila Strip 20 Cap			     1			Rs.100.0
+ Ashwagandha Churna 100GM			     1			Rs.85.0
+ Ashwagandha Strip 20 Cap			     1			Rs.90.0
+ Atta Noodle Chatpata 60GM			     5			Rs.60.0
+ Ayurh Syrup			     1			Rs.342.0
+=============================================================
+ Bill Amount						Rs.677.0
+ Discount						Rs.33.85
+ Net Pay						Rs.643.15
+=============================================================
+        

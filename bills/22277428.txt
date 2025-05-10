@@ -1,0 +1,20 @@
+
+		     Prabhu Dhyan - Inventory
+		Phone No. 991100**** , Delhi-110032
+=============================================================
+ Customer Name: Rajan
+ Phone No.: 9137406553
+ Bill No.: 22277428					Date: 22/04/2025
+=============================================================
+ Product Name			     QTY			Price
+=============================================================
+        
+ SWET MUSLI CHURNA 100 GM			     1			Rs.475.0
+ MUKTA VATI EXTRA POWER TAB 120 (STRIP)			     1			Rs.225.0
+ KESH KANI HAIR CLEANSER NATURAL 5 ML			     10			Rs.10.0
+=============================================================
+ Bill Amount						Rs.710.0
+ Discount						Rs.35.5
+ Net Pay						Rs.674.5
+=============================================================
+        
