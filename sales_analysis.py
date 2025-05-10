@@ -80,7 +80,6 @@ def calculate_predictions(sales_data):
     
     return aggregated_predictions
 
-# Improved Holt-Winters Forecasting function
 def holt_winters_forecast(sales, days=7):
     if sum(sales[-7:]) == 0:
         return [0] * days
@@ -389,9 +388,21 @@ class ModernSalesAnalysisApp:
             justify=tk.LEFT,
             wraplength=800
         ).pack(padx=20, pady=20, anchor=tk.W)
+    
+    
         
     def plot_14_day_top_trend(self, parent_frame):
-        fig = Figure(figsize=(8, 5), dpi=100)
+        def matplotlib_to_hex(color):
+            """Convert matplotlib color to hex format"""
+            if isinstance(color, str):
+                return color  # Already a color name or hex
+            elif len(color) == 3:  # RGB
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color)
+            elif len(color) == 4:  # RGBA
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color[:3])
+            return '#000000'  # Default to black if unknown format
+        # Create main figure and axis
+        fig = Figure(figsize=(10, 6), dpi=100)
         ax = fig.add_subplot(111)
         
         days = [(today - timedelta(days=i)).strftime("%d-%b") for i in range(13, -1, -1)]
@@ -404,18 +415,14 @@ class ModernSalesAnalysisApp:
         )[:5]  # Show top 5 products
         
         colors = plt.cm.tab10.colors
-        self.lines_14_top = []  # Store line objects for hover functionality
+        self.lines_14_top = []
         
         for i, product in enumerate(top_products):
             data = sales_data[product]
-            # Create aggregated sales dictionary
             sales_dict = {}
             for date, qty_sold, _ in data:
                 date_str = date.strftime("%Y-%m-%d")
-                if date_str in sales_dict:
-                    sales_dict[date_str] += qty_sold
-                else:
-                    sales_dict[date_str] = qty_sold
+                sales_dict[date_str] = sales_dict.get(date_str, 0) + qty_sold
             
             past_sales = [sales_dict.get(day, 0) for day in last_14_days]
             line, = ax.plot(days, past_sales[-14:], 
@@ -430,11 +437,53 @@ class ModernSalesAnalysisApp:
         ax.set_title("Top 5 Products - 14-Day Sales Trend", fontsize=12, pad=20)
         ax.set_xlabel("Date", fontsize=10)
         ax.set_ylabel("Units Sold", fontsize=10)
-        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize=9)
         ax.grid(True, linestyle="--", alpha=0.4)
         ax.tick_params(axis="x", rotation=45)
         ax.set_facecolor("#f9f9f9")
-        fig.tight_layout()
+        
+        # Create canvas for main plot
+        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Create scrollable legend frame
+        legend_frame = tk.Frame(parent_frame, bg="#f5f6fa")
+        legend_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(0, 10), pady=10)
+        
+        # Create canvas for legend
+        legend_canvas = tk.Canvas(legend_frame, bg="#f5f6fa", width=200, height=400)
+        legend_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Add scrollbar
+        scrollbar = ttk.Scrollbar(legend_frame, orient=tk.VERTICAL, command=legend_canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        legend_canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Create frame inside canvas for legend items
+        legend_items_frame = tk.Frame(legend_canvas, bg="#f5f6fa")
+        legend_canvas.create_window((0, 0), window=legend_items_frame, anchor=tk.NW)
+        
+        # Add legend items
+        for i, (product, line) in enumerate(zip(top_products, self.lines_14_top)):
+            color = colors[i]
+            item_frame = tk.Frame(legend_items_frame, bg="#f5f6fa")
+            item_frame.pack(fill=tk.X, pady=2)
+            
+            # Color indicator
+            tk.Canvas(item_frame, width=20, height=20, bg=matplotlib_to_hex(color), bd=0, highlightthickness=0).pack(side=tk.LEFT)
+            
+            # Product name
+            tk.Label(
+                item_frame, 
+                text=product[:20] + '...' if len(product) > 20 else product,
+                font=("Segoe UI", 8),
+                bg="#f5f6fa",
+                anchor=tk.W
+            ).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        # Update scroll region
+        legend_items_frame.update_idletasks()
+        legend_canvas.configure(scrollregion=legend_canvas.bbox("all"))
         
         # Add hover functionality
         def on_hover(event):
@@ -443,120 +492,199 @@ class ModernSalesAnalysisApp:
                     if line.contains(event)[0]:
                         line.set_linewidth(4)
                         line.set_alpha(1)
-                        fig.canvas.draw_idle()
+                        canvas.draw_idle()
                         return
                 for line in self.lines_14_top:
                     line.set_linewidth(2)
                     line.set_alpha(0.8)
-                fig.canvas.draw_idle()
+                canvas.draw_idle()
         
         def on_leave(event):
             for line in self.lines_14_top:
                 line.set_linewidth(2)
                 line.set_alpha(0.8)
-            fig.canvas.draw_idle()
+            canvas.draw_idle()
         
         fig.canvas.mpl_connect('motion_notify_event', on_hover)
         fig.canvas.mpl_connect('axes_leave_event', on_leave)
-        
-        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
     def plot_14_day_all_trend(self, parent_frame):
-        fig = Figure(figsize=(8, 5), dpi=100)
+        def matplotlib_to_hex(color):
+            """Convert matplotlib color to hex format"""
+            if isinstance(color, str):
+                return color  # Already a color name or hex
+            elif len(color) == 3:  # RGB
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color)
+            elif len(color) == 4:  # RGBA
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color[:3])
+            return '#000000'  # Default to black if unknown format
+    
+        fig = Figure(figsize=(10, 6), dpi=100)
         ax = fig.add_subplot(111)
-        
+    
         days = [(today - timedelta(days=i)).strftime("%d-%b") for i in range(13, -1, -1)]
+    
+        products_to_plot = []
+        for product in sales_data.keys():
+            sales_dict = {}
+            for date, qty_sold, _ in sales_data[product]:
+                date_str = date.strftime("%Y-%m-%d")
+                if date_str in last_14_days:
+                    sales_dict[date_str] = sales_dict.get(date_str, 0) + qty_sold
         
-        products_to_plot = [p for p in sales_data.keys() if p in aggregated_predictions]
+            if any(sales_dict.values()):
+                products_to_plot.append(product)
+    
+        if not products_to_plot:
+            ax.text(0.5, 0.5, 'No sales data available', ha='center', va='center')
+            canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            return
+
         colors = plt.cm.tab20.colors
-        self.lines_14_all = []  # Store line objects for hover functionality
-        
+        self.lines_14_all = []
+    
         for i, product in enumerate(products_to_plot):
             data = sales_data[product]
-            # Create aggregated sales dictionary
             sales_dict = {}
             for date, qty_sold, _ in data:
                 date_str = date.strftime("%Y-%m-%d")
-                if date_str in sales_dict:
-                    sales_dict[date_str] += qty_sold
-                else:
-                    sales_dict[date_str] = qty_sold
-            
-            past_sales = [sales_dict.get(day, 0) for day in last_14_days]
-            line, = ax.plot(days, past_sales[-14:], 
-                           marker="o", 
-                           linestyle="-", 
-                           label=product,
-                           color=colors[i % len(colors)],
-                           linewidth=1.5,
-                           markersize=4,
-                           alpha=0.7)
-            self.lines_14_all.append(line)
+                sales_dict[date_str] = sales_dict.get(date_str, 0) + qty_sold
         
+            past_sales = [sales_dict.get(day, 0) for day in last_14_days]
+        
+            if any(past_sales):
+                line, = ax.plot(days, past_sales[-14:], 
+                            marker="o", 
+                            linestyle="-", 
+                            label=product,
+                            color=colors[i % len(colors)],
+                            linewidth=1.5,
+                            markersize=4,
+                            alpha=0.7)
+                self.lines_14_all.append(line)
+    
         ax.set_title("All Products - 14-Day Sales Trend", fontsize=12, pad=20)
         ax.set_xlabel("Date", fontsize=10)
         ax.set_ylabel("Units Sold", fontsize=10)
-        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize=8)
         ax.grid(True, linestyle="--", alpha=0.4)
         ax.tick_params(axis="x", rotation=45)
         ax.set_facecolor("#f9f9f9")
-        fig.tight_layout()
+    
+        # Create canvas and store it as an instance variable
+        self.canvas_14_all = FigureCanvasTkAgg(fig, master=parent_frame)
+        self.canvas_14_all.draw()
+        self.canvas_14_all.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+    
+        # Scrollable legend
+        legend_frame = tk.Frame(parent_frame, bg="#f5f6fa")
+        legend_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(0, 10), pady=10)
+    
+        legend_canvas = tk.Canvas(legend_frame, bg="#f5f6fa", width=200, height=400)
+        legend_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    
+        scrollbar = ttk.Scrollbar(legend_frame, orient=tk.VERTICAL, command=legend_canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        legend_canvas.configure(yscrollcommand=scrollbar.set)
+    
+        legend_items_frame = tk.Frame(legend_canvas, bg="#f5f6fa")
+        legend_canvas.create_window((0, 0), window=legend_items_frame, anchor=tk.NW)
+    
+        # Add legend items with checkboxes
+        self.legend_vars = {}
+        for i, (product, line) in enumerate(zip(products_to_plot, self.lines_14_all)):
+            color = colors[i % len(colors)]
+            self.legend_vars[product] = tk.BooleanVar(value=True)
         
-        # Add hover functionality
+            item_frame = tk.Frame(legend_items_frame, bg="#f5f6fa")
+            item_frame.pack(fill=tk.X, pady=2)
+        
+            # Checkbox
+            cb = tk.Checkbutton(
+                item_frame,
+                variable=self.legend_vars[product],
+                command=lambda p=product, l=line: self.toggle_line_visibility(p, l),
+                bg="#f5f6fa"
+            )
+            cb.pack(side=tk.LEFT)
+        
+            # Color indicator
+            tk.Canvas(item_frame, width=20, height=20, bg=matplotlib_to_hex(color), bd=0, highlightthickness=0).pack(side=tk.LEFT)
+        
+            # Product name
+            tk.Label(
+                item_frame,
+                text=product[:18] + '...' if len(product) > 18 else product,
+                font=("Segoe UI", 8),
+                bg="#f5f6fa",
+                anchor=tk.W
+            ).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+    
+        legend_items_frame.update_idletasks()
+        legend_canvas.configure(scrollregion=legend_canvas.bbox("all"))
+    
+        # Hover functionality
         def on_hover(event):
             if event.inaxes == ax:
                 for line in self.lines_14_all:
                     if line.contains(event)[0]:
                         line.set_linewidth(3)
                         line.set_alpha(1)
-                        fig.canvas.draw_idle()
+                        self.canvas_14_all.draw_idle()
                         return
                 for line in self.lines_14_all:
                     line.set_linewidth(1.5)
                     line.set_alpha(0.7)
-                fig.canvas.draw_idle()
-        
+                self.canvas_14_all.draw_idle()
+    
         def on_leave(event):
             for line in self.lines_14_all:
                 line.set_linewidth(1.5)
                 line.set_alpha(0.7)
-            fig.canvas.draw_idle()
-        
+            self.canvas_14_all.draw_idle()
+    
         fig.canvas.mpl_connect('motion_notify_event', on_hover)
         fig.canvas.mpl_connect('axes_leave_event', on_leave)
-        
-        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
+    def toggle_line_visibility(self, product, line):
+        if self.legend_vars[product].get():
+            line.set_visible(True)
+        else:
+            line.set_visible(False)
+        self.canvas_14_all.draw()  # Use the specific canvas for this plot
+
     def plot_30_day_top_trend(self, parent_frame):
-        fig = Figure(figsize=(8, 5), dpi=100)
+        def matplotlib_to_hex(color):
+            """Convert matplotlib color to hex format"""
+            if isinstance(color, str):
+                return color  # Already a color name or hex
+            elif len(color) == 3:  # RGB
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color)
+            elif len(color) == 4:  # RGBA
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color[:3])
+            return '#000000'  # Default to black if unknown format
+        fig = Figure(figsize=(10, 6), dpi=100)
         ax = fig.add_subplot(111)
         
         last_30_days = [(today - timedelta(days=i)).strftime("%d-%b") for i in range(29, -1, -1)]
-        products_to_plot = [p for p in sales_data.keys() if p in aggregated_predictions]
         
+        products_to_plot = [p for p in sales_data.keys() if p in aggregated_predictions]
         top_products = sorted(
             products_to_plot,
             key=lambda x: sum(qty for _, qty, _ in sales_data[x][-30:]),
             reverse=True
-        )[:5]  # Show top 5 products
+        )[:5]
         
         colors = plt.cm.tab10.colors
-        self.lines_30_top = []  # Store line objects for hover functionality
+        self.lines_30_top = []
         
         for i, product in enumerate(top_products):
             data = sales_data[product]
-            # Create aggregated sales dictionary
             sales_dict = {}
             for date, qty_sold, _ in data:
                 date_str = date.strftime("%Y-%m-%d")
-                if date_str in sales_dict:
-                    sales_dict[date_str] += qty_sold
-                else:
-                    sales_dict[date_str] = qty_sold
+                sales_dict[date_str] = sales_dict.get(date_str, 0) + qty_sold
             
             past_sales_30 = [
                 sales_dict.get((today - timedelta(days=i)).strftime("%Y-%m-%d"), 0)
@@ -575,110 +703,212 @@ class ModernSalesAnalysisApp:
         ax.set_title("Top 5 Products - 30-Day Sales Trend", fontsize=12, pad=20)
         ax.set_xlabel("Date", fontsize=10)
         ax.set_ylabel("Units Sold", fontsize=10)
-        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize=9)
         ax.grid(True, linestyle="--", alpha=0.4)
         ax.tick_params(axis="x", rotation=45)
         ax.set_facecolor("#f9f9f9")
-        fig.tight_layout()
         
-        # Add hover functionality
+        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Scrollable legend
+        legend_frame = tk.Frame(parent_frame, bg="#f5f6fa")
+        legend_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(0, 10), pady=10)
+        
+        legend_canvas = tk.Canvas(legend_frame, bg="#f5f6fa", width=200, height=400)
+        legend_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        scrollbar = ttk.Scrollbar(legend_frame, orient=tk.VERTICAL, command=legend_canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        legend_canvas.configure(yscrollcommand=scrollbar.set)
+        
+        legend_items_frame = tk.Frame(legend_canvas, bg="#f5f6fa")
+        legend_canvas.create_window((0, 0), window=legend_items_frame, anchor=tk.NW)
+        
+        for i, (product, line) in enumerate(zip(top_products, self.lines_30_top)):
+            color = colors[i]
+            item_frame = tk.Frame(legend_items_frame, bg="#f5f6fa")
+            item_frame.pack(fill=tk.X, pady=2)
+            
+            tk.Canvas(item_frame, width=20, height=20, bg=matplotlib_to_hex(color), bd=0, highlightthickness=0).pack(side=tk.LEFT)
+            tk.Label(
+                item_frame, 
+                text=product[:20] + '...' if len(product) > 20 else product,
+                font=("Segoe UI", 8),
+                bg="#f5f6fa",
+                anchor=tk.W
+            ).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        
+        legend_items_frame.update_idletasks()
+        legend_canvas.configure(scrollregion=legend_canvas.bbox("all"))
+        
+        # Hover functionality
         def on_hover(event):
             if event.inaxes == ax:
                 for line in self.lines_30_top:
                     if line.contains(event)[0]:
                         line.set_linewidth(3)
                         line.set_alpha(1)
-                        fig.canvas.draw_idle()
+                        canvas.draw_idle()
                         return
                 for line in self.lines_30_top:
                     line.set_linewidth(2)
                     line.set_alpha(0.9)
-                fig.canvas.draw_idle()
+                canvas.draw_idle()
         
         def on_leave(event):
             for line in self.lines_30_top:
                 line.set_linewidth(2)
                 line.set_alpha(0.9)
-            fig.canvas.draw_idle()
+            canvas.draw_idle()
         
         fig.canvas.mpl_connect('motion_notify_event', on_hover)
         fig.canvas.mpl_connect('axes_leave_event', on_leave)
-        
-        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
     def plot_30_day_all_trend(self, parent_frame):
-        fig = Figure(figsize=(8, 5), dpi=100)
+        def matplotlib_to_hex(color):
+            """Convert matplotlib color to hex format"""
+            if isinstance(color, str):
+                return color  # Already a color name or hex
+            elif len(color) == 3:  # RGB
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color)
+            elif len(color) == 4:  # RGBA
+                return '#%02x%02x%02x' % tuple(int(255*x) for x in color[:3])
+            return '#000000'  # Default to black if unknown format
+    
+        fig = Figure(figsize=(10, 6), dpi=100)
         ax = fig.add_subplot(111)
-        
+    
         last_30_days = [(today - timedelta(days=i)).strftime("%d-%b") for i in range(29, -1, -1)]
-        products_to_plot = [p for p in sales_data.keys() if p in aggregated_predictions]
+    
+        products_to_plot = []
+        for product in sales_data.keys():
+            sales_dict = {}
+            for date, qty_sold, _ in sales_data[product]:
+                date_str = date.strftime("%Y-%m-%d")
+                if date_str in [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(29, -1, -1)]:
+                    sales_dict[date_str] = sales_dict.get(date_str, 0) + qty_sold
         
+            if any(sales_dict.values()):
+                products_to_plot.append(product)
+    
+        if not products_to_plot:
+            ax.text(0.5, 0.5, 'No sales data available', ha='center', va='center')
+            canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            return
+    
         colors = plt.cm.tab20.colors
-        self.lines_30_all = []  # Store line objects for hover functionality
-        
+        self.lines_30_all = []
+    
         for i, product in enumerate(products_to_plot):
             data = sales_data[product]
-            # Create aggregated sales dictionary
             sales_dict = {}
             for date, qty_sold, _ in data:
                 date_str = date.strftime("%Y-%m-%d")
-                if date_str in sales_dict:
-                    sales_dict[date_str] += qty_sold
-                else:
-                    sales_dict[date_str] = qty_sold
-            
+                sales_dict[date_str] = sales_dict.get(date_str, 0) + qty_sold
+        
             past_sales_30 = [
                 sales_dict.get((today - timedelta(days=i)).strftime("%Y-%m-%d"), 0)
                 for i in range(29, -1, -1)
             ]
-            line, = ax.plot(last_30_days, past_sales_30, 
-                           marker="o", 
-                           linestyle="-", 
-                           label=product,
-                           color=colors[i % len(colors)],
-                           linewidth=1,
-                           markersize=3,
-                           alpha=0.6)
-            self.lines_30_all.append(line)
         
+            if any(past_sales_30):
+                line, = ax.plot(last_30_days, past_sales_30, 
+                            marker="o", 
+                            linestyle="-", 
+                            label=product,
+                            color=colors[i % len(colors)],
+                            linewidth=1,
+                            markersize=3,
+                            alpha=0.6)
+                self.lines_30_all.append(line)
+    
         ax.set_title("All Products - 30-Day Sales Trend", fontsize=12, pad=20)
         ax.set_xlabel("Date", fontsize=10)
         ax.set_ylabel("Units Sold", fontsize=10)
-        legend = ax.legend(loc="upper left", bbox_to_anchor=(1, 1), fontsize=8)
         ax.grid(True, linestyle="--", alpha=0.4)
         ax.tick_params(axis="x", rotation=45)
         ax.set_facecolor("#f9f9f9")
-        fig.tight_layout()
+    
+        # Create canvas and store it as an instance variable
+        self.canvas_30_all = FigureCanvasTkAgg(fig, master=parent_frame)
+        self.canvas_30_all.draw()
+        self.canvas_30_all.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+    
+        # Scrollable legend with checkboxes
+        legend_frame = tk.Frame(parent_frame, bg="#f5f6fa")
+        legend_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(0, 10), pady=10)
+    
+        legend_canvas = tk.Canvas(legend_frame, bg="#f5f6fa", width=200, height=400)
+        legend_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    
+        scrollbar = ttk.Scrollbar(legend_frame, orient=tk.VERTICAL, command=legend_canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        legend_canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Add hover functionality
+        legend_items_frame = tk.Frame(legend_canvas, bg="#f5f6fa")
+        legend_canvas.create_window((0, 0), window=legend_items_frame, anchor=tk.NW)
+    
+        self.legend_vars_30 = {}
+        for i, (product, line) in enumerate(zip(products_to_plot, self.lines_30_all)):
+            color = colors[i % len(colors)]
+            self.legend_vars_30[product] = tk.BooleanVar(value=True)
+        
+            item_frame = tk.Frame(legend_items_frame, bg="#f5f6fa")
+            item_frame.pack(fill=tk.X, pady=2)
+        
+            cb = tk.Checkbutton(
+                item_frame,
+                variable=self.legend_vars_30[product],
+                command=lambda p=product, l=line: self.toggle_line_visibility_30(p, l),
+                bg="#f5f6fa"
+            )
+            cb.pack(side=tk.LEFT)
+        
+            tk.Canvas(item_frame, width=20, height=20, bg=matplotlib_to_hex(color), bd=0, highlightthickness=0).pack(side=tk.LEFT)
+            tk.Label(
+                item_frame,
+                text=product[:18] + '...' if len(product) > 18 else product,
+                font=("Segoe UI", 8),
+                bg="#f5f6fa",
+                anchor=tk.W
+            ).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+    
+        legend_items_frame.update_idletasks()
+        legend_canvas.configure(scrollregion=legend_canvas.bbox("all"))
+    
+        # Hover functionality
         def on_hover(event):
             if event.inaxes == ax:
                 for line in self.lines_30_all:
                     if line.contains(event)[0]:
                         line.set_linewidth(2)
                         line.set_alpha(1)
-                        fig.canvas.draw_idle()
+                        self.canvas_30_all.draw_idle()
                         return
                 for line in self.lines_30_all:
                     line.set_linewidth(1)
                     line.set_alpha(0.6)
-                fig.canvas.draw_idle()
-        
+                self.canvas_30_all.draw_idle()
+    
         def on_leave(event):
             for line in self.lines_30_all:
                 line.set_linewidth(1)
                 line.set_alpha(0.6)
-            fig.canvas.draw_idle()
-        
+            self.canvas_30_all.draw_idle()
+    
         fig.canvas.mpl_connect('motion_notify_event', on_hover)
         fig.canvas.mpl_connect('axes_leave_event', on_leave)
-        
-        canvas = FigureCanvasTkAgg(fig, master=parent_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
+    def toggle_line_visibility_30(self, product, line):
+        if self.legend_vars_30[product].get():
+            line.set_visible(True)
+        else:
+            line.set_visible(False)
+        self.canvas_30_all.draw()  # Use the specific canvas for this plot
+
     def load_data(self):
         # Clear existing data
         for row in self.tree.get_children():
@@ -837,6 +1067,8 @@ class ModernSalesAnalysisApp:
                 f"An error occurred while exporting:\n{str(e)}",
                 parent=self.root
             )
+
+    
 
 if __name__ == "__main__":
     root = tk.Tk()
